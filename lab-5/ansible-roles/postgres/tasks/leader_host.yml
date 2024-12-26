@@ -1,0 +1,9 @@
+---
+- name: Register patroni cluster leader as fact
+  shell: |
+    curl -s http://{{ postgres_etcd_load_balancer_host }}:2379/v2/keys/service/{{ postgres_patroni_cluster_name }}/leader | jq -r .node.value
+  register: postgres_leader_host_output
+
+- name: Register patroni cluster leader as fact
+  set_fact:
+    postgres_leader_host: "{{ postgres_leader_host_output.stdout }}"

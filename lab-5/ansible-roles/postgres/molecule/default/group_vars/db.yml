@@ -1,0 +1,6 @@
+postgres_admin_password: password
+postgres_etcd_load_balancer_host: srv3
+
+postgres_new_user: new_user
+postgres_new_user_password: 760fe41a-38e9-4eae-a561-046922eae323
+postgres_new_database: new_database

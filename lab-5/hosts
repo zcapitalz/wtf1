@@ -1,0 +1,13 @@
+[app]
+srv1
+
+[db]
+srv2
+srv3
+
+[etcd]
+srv2
+srv3
+
+[balancer]
+srv1

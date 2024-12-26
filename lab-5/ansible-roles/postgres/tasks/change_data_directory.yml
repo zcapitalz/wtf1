@@ -1,0 +1,66 @@
+- name: Grep current PostgreSQL data directory
+  shell: |
+    grep 'data_dir' /etc/patroni/config.yml | cut -d ":" -f2
+  register: postgres_current_data_directory_path_grep
+
+- name: Grep current PostgreSQL data directory as fact
+  set_fact:
+    postgres_current_data_directory_path: "{{ postgres_current_data_directory_path_grep.stdout }}"
+
+- block:
+  - name: Print new PostgreSQL data directory
+    debug:
+      msg: Change PostgreSQL data directory from {{ postgres_current_data_directory_path }} to {{ postgres_data_directory_path }}
+
+  - name: Stop Patroni service
+    ansible.builtin.systemd_service:
+      name: patroni
+      state: stopped
+      enabled: false
+    become: true
+
+  - name: Create new PostgreSQL data directory
+    file:
+      path: "{{ postgres_data_directory_path }}"
+      state: directory
+      owner: postgres
+      mode: '0750'
+    become: true
+  
+  - name: Give postgres access to new data directory
+    shell: |
+      d="{{ postgres_data_directory_path }}"
+      while [ "$d" != "/" ]; do
+        chmod a+X "$d"
+        d=$(dirname "$d")
+      done
+    args:
+      executable: /bin/bash
+    become: true
+
+  - name: Sync PostgreSQL data to new location
+    shell: |
+      sudo rsync -av {{ postgres_current_data_directory_path }}/ {{ postgres_data_directory_path }}
+
+  - name: Change data directory in Patroni config
+    lineinfile:
+      path: "{{ postgres_patroni_config_path }}"
+      regexp: '^  data_dir:'
+      line: "  data_dir: {{ postgres_data_directory_path }}"
+      state: present
+    become: true
+
+  - name: Delete old data directory
+    ansible.builtin.file:
+      state: absent
+      path: "{{ postgres_current_data_directory_path }}"
+    become: true
+
+  - name: Start Patroni service
+    ansible.builtin.systemd_service:
+      name: patroni
+      state: started
+      enabled: true
+    become: true
+
+  when: postgres_current_data_directory_path|trim != postgres_data_directory_path|trim

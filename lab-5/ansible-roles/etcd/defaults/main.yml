@@ -1,0 +1,2 @@
+postgres_etcd_version: 3.5.17
+postgres_etcd_initial_cluster_token: etcd-cluster-01

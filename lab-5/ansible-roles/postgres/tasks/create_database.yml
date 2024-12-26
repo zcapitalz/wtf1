@@ -1,0 +1,11 @@
+- name: Get PostgreSQL cluster leader host
+  import_tasks: "./leader_host.yml"
+
+- name: Create new database
+  become: true
+  become_method: sudo
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    login_password: "{{ postgres_admin_password }}"
+    name: "{{ postgres_new_database }}"
+  delegate_to: "{{ postgres_leader_host }}"

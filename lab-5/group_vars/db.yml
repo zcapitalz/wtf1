@@ -1,0 +1,8 @@
+---
+postgres_major_version: 16
+postgres_replicator_password: b0cafe8c-bca2-4541-894f-bdb9b0b51dca
+postgres_rewind_user_password: 69d1e2c0-afe4-42f5-bbe5-f829e68ca6bf
+postgres_admin_password: ad887a21-f9c8-4d59-ab17-757027c063f5
+postgres_patroni_cluster_name: patroni-cluster01
+postgres_etcd_load_balancer_host: srv1
+# postgres_data_directory_path: /data/postgres

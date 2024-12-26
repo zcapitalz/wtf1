@@ -1,0 +1,10 @@
+---
+- name: Creat new PostgreSQL database
+  hosts: "{{ groups['db'][0] }}"
+  vars:
+    postgres_new_database: new_database
+  tasks:
+  - name: Creat new PostgreSQL database
+    import_role:
+      name: postgres
+      tasks_from: create_database.yml

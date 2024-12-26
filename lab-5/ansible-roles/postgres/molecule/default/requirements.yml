@@ -1,0 +1,4 @@
+---
+- src: git+ssh://git@github.com/zcapitalz/devops-labs-ansible-role-etcd.git
+  version: "01f60e2dc00f7c73afad44cc067af364c9e4a337"
+  name: etcd

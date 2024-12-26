@@ -1,0 +1,4 @@
+---
+- src: git+ssh://git@github.com/zcapitalz/devops-labs-ansible-role-nginx.git
+  version: "58da57dee6521267bcdd2d002c5596180c89caa0"
+  name: nginx

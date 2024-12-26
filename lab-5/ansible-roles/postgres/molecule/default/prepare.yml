@@ -1,0 +1,14 @@
+- name: Prepare
+  hosts: all
+  tasks:
+  - name: Add hostnames
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ item }}"
+      create: yes
+    with_items:
+      - "192.168.56.101 srv1"
+      - "192.168.56.102 srv2"
+      - "192.168.56.103 srv3"
+      - "192.168.56.103 etcd_load_balancer"
+    become: true

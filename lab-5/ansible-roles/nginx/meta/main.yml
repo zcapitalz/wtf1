@@ -1,0 +1,11 @@
+galaxy_info:
+  author: Nikolay Zadneprovskiy
+  description: Installation and configuration of Nginx
+  
+  license: BSD
+
+  min_ansible_version: "2.1"
+
+  galaxy_tags: [nginx]
+
+dependencies: []

@@ -1,0 +1,8 @@
+---
+- name: Change PostgreSQL data directory
+  hosts: db
+  tasks:
+  - name: Change PostgreSQL data directory
+    import_role:
+      name: postgres
+      tasks_from: change_data_directory.yml

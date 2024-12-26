@@ -1,0 +1,16 @@
+---
+- name: Creat new PostgreSQL user
+  hosts: "{{ groups['db'][0] }}"
+  vars:
+    postgres_new_user: new_user
+    postgres_new_user_password: 760fe41a-38e9-4eae-a561-046922eae323
+  tasks:
+  - name: Creat new PostgreSQL user
+    import_role:
+      name: postgres
+      tasks_from: create_user.yml
+
+  - name: Creat new PostgreSQL database
+    import_role:
+      name: postgres
+      tasks_from: create_database.yml

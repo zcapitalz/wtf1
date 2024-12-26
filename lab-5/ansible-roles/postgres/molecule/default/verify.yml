@@ -1,0 +1,49 @@
+---
+- name: Verify PostgreSQL server is running
+  hosts: db
+  gather_facts: false
+  become: true
+  vars_files:
+    - "{{ playbook_dir }}/vars/postgres.yml"
+  tasks:
+    - name: Check if PostgreSQL service is running and active
+      ansible.builtin.systemd:
+        name: postgresql
+      register: postgres_service_status
+
+    - name: Fail if PostgreSQL service is not running or is inactive
+      ansible.builtin.fail:
+        msg: "PostgreSQL service is not running"
+      when: postgres_service_status.status.ActiveState != 'active'
+
+    - name: Check PostgreSQL port is occupied
+      shell: |
+        ss -tp state listening sport = :5432 | grep postgresql | awk '{print $3}' | cut -d':' -f2
+      register: postgres_port_listener
+
+    - name: Faild if PostgreSQL port is not listened
+      ansible.builtin.fail:
+        msg: "PostgreSQL service is not listening on port 5432"
+      when: postgres_port_listener.stdout != 'postgresql'
+
+    - name: Check if the new user exists
+      community.postgresql.postgresql_query:
+        login_password: "{{ postgres_admin_password }}"
+        query: "SELECT 1 FROM pg_roles WHERE rolname = '{{ postgres_new_user }}';"
+      register: postgres_new_user_query_result
+
+    - name: Fail if new user does not exist
+      ansible.builtin.fail:
+        msg: "New user {{ postgres_new_user }} was not created"
+      when: postgres_new_user_query_result.rowcount != 1
+
+    - name: Check if new database exists
+      community.postgresql.postgresql_query:
+        login_password: "{{ postgres_admin_password }}"
+        query: "SELECT 1 FROM pg_database WHERE datname = '{{ postgres_new_database }}';"
+      register: postgres_new_database_query_result
+
+    - name: Fail if new database does not exist
+      ansible.builtin.fail:
+        msg: "New database {{ postgres_new_database }} was not created"
+      when: postgres_new_database_query_result.rowcount != 1

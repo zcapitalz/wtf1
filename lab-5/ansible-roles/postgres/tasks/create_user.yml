@@ -1,0 +1,13 @@
+- name: Get PostgreSQL cluster leader host
+  import_tasks: "./leader_host.yml"
+
+- name: Create new role
+  become: true
+  become_method: sudo
+  become_user: postgres
+  community.postgresql.postgresql_user:
+    name: "{{ postgres_new_user }}"
+    password: "{{ postgres_new_user_password }}"
+    db: postgres
+    login_password: "{{ postgres_admin_password }}"
+  delegate_to: "{{ postgres_leader_host }}"

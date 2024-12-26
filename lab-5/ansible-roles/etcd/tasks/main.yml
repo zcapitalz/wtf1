@@ -1,0 +1,34 @@
+- name: Get ip to serve etcd on
+  shell: |
+    ip -f inet addr show {{ postgres_etcd_network_interface }} | sed -En -e 's/.*inet ([0-9.]+).*/\1/p'
+  register: postgres_etcd_ip_shell_output
+
+- name: Get ip to serve etcd on
+  set_fact:
+    postgres_etcd_ip: "{{ postgres_etcd_ip_shell_output.stdout }}"
+
+- name: Create value to include inside ETCD_INITIAL_CLUSTER variable
+  set_fact:
+    postgres_etcd_initial_cluster_entry: >-
+      {{ inventory_hostname }}=http://{{ postgres_etcd_ip }}:2380
+
+- name: Create ETCD_INITIAL_CLUSTER env parameter
+  set_fact:
+    postgres_etcd_initial_cluster: "{{ ansible_play_hosts | map('extract', hostvars, 'postgres_etcd_initial_cluster_entry') | join(',') }}"
+  run_once: true
+
+- name: Create etcd config
+  vars:
+      postgres_etcd_name: "{{ inventory_hostname }}"
+  template:
+    src: ../templates/etcd.j2
+    dest: /etc/default/etcd
+  become: true
+
+- name: Install etcd
+  package:
+    name:
+      - etcd
+    state: present
+    update_cache: true
+  become: true

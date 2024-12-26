@@ -1,0 +1,8 @@
+ETCD_ENABLE_V2=true
+ETCD_NAME={{ postgres_etcd_name }}
+ETCD_INITIAL_CLUSTER_TOKEN={{ postgres_etcd_initial_cluster_token }}
+ETCD_INITIAL_CLUSTER={{ postgres_etcd_initial_cluster }}
+ETCD_INITIAL_ADVERTISE_PEER_URLS=http://{{ postgres_etcd_ip }}:2380
+ETCD_LISTEN_PEER_URLS=http://{{ postgres_etcd_ip }}:2380
+ETCD_ADVERTISE_CLIENT_URLS=http://{{ postgres_etcd_ip }}:2379
+ETCD_LISTEN_CLIENT_URLS=http://{{ postgres_etcd_ip }}:2379,http://localhost:2379

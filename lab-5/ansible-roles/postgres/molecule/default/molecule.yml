@@ -1,0 +1,54 @@
+---
+dependency:
+  name: galaxy
+  options:
+    role-file: requirements.yml
+
+driver:
+  name: vagrant
+
+platforms:
+  - name: srv1
+    box: ubuntu/focal64
+    hostname: srv1
+    groups:
+      - db
+      - etcd
+    interfaces:
+      - network_name: private_network
+        type: static
+        ip: 192.168.56.101
+        auto_config: true
+
+  - name: srv2
+    box: ubuntu/focal64
+    hostname: srv2
+    groups:
+      - db
+      - etcd
+    interfaces:
+      - network_name: private_network
+        type: static
+        ip: 192.168.56.102
+        auto_config: true
+
+  - name: srv3
+    box: ubuntu/focal64
+    hostname: srv3
+    groups:
+      - etcd_load_balancer
+    interfaces:
+      - network_name: private_network
+        type: static
+        ip: 192.168.56.103
+        auto_config: true
+
+scenario:
+  test_sequence:
+    - dependency
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    # - destroy

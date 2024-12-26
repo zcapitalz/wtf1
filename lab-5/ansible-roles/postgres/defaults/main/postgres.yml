@@ -1,0 +1,6 @@
+postgres_major_version: 16
+postgres_replicator_password: patroni
+postgres_rewind_user_password: patroni
+postgres_admin_password: ""
+postgres_bin_directory_path: "/usr/lib/postgresql/{{ postgres_major_version }}/bin"
+postgres_data_directory_path: "/var/lib/postgresql/{{ postgres_major_version }}/main"

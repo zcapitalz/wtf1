@@ -1,0 +1,3 @@
+postgres_patroni_config_path: /etc/patroni/config.yml
+postgres_patroni_cluster_name: postgres
+postgres_etcd_load_balancer_host: etcd_load_balancer

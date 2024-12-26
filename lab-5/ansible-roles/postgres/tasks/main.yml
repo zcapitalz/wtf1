@@ -1,0 +1,97 @@
+---
+- name: Install apt dependencies
+  package:
+    name:
+      - libpq-dev
+      - acl
+      - postgresql-common
+      - jq
+    state: present
+    update_cache: true
+  become: true
+
+- name: Disable automatic PostgreSQL main cluster creation
+  shell: |
+    sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf
+  become: true
+
+- name: Add PostgreSQL repository
+  shell: |
+    sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+  become: true
+
+- name: Install PostgreSQL
+  package:
+    name: 
+      - "postgresql-{{ postgres_major_version }}"
+      - "postgresql-client-{{ postgres_major_version }}"
+      - "postgresql-contrib-{{ postgres_major_version }}"
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install pip
+  package:
+    name: python3-pip
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install psycopg2 pip package
+  pip:
+    name:
+      - psycopg2
+    executable: pip3
+  become: true
+
+- name: Create Patroni data directory
+  file:
+    path: "{{ postgres_data_directory_path }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0700'
+  become: true
+
+- name: Install apt dependencies
+  package:
+    name:
+      - patroni
+    state: present
+    update_cache: true
+  become: true
+
+- name: Render Patroni config
+  vars:
+    postgres_patroni_name: "{{ inventory_hostname }}"
+  set_fact:
+    postgres_patroni_config_content: "{{ lookup('template', '../templates/patroni.yml.j2') }}"
+
+- name: Read current Patroni config
+  slurp:
+    src: "{{ postgres_patroni_config_path }}"
+  register: postgres_current_patroni_config_slurp
+  ignore_errors: true
+
+- block:
+  - name: Create Patroni config file
+    copy:
+      content: "{{ postgres_patroni_config_content }}"
+      dest: "{{ postgres_patroni_config_path }}"
+    become: true
+
+  - name: Restart Patroni service
+    ansible.builtin.systemd:
+      name: patroni
+      state: restarted
+    become: true
+
+  when: postgres_patroni_config_content is defined and
+        (postgres_current_patroni_config_slurp.failed or (postgres_patroni_config_content | trim) != (postgres_current_patroni_config_slurp.content | b64decode | trim))
+
+- name: Start Patroni service
+  ansible.builtin.systemd:
+    name: patroni
+    state: started
+    enabled: yes
+  become: true

@@ -1,0 +1,23 @@
+---
+- name: Run etcd cluster
+  hosts: etcd
+  roles:
+    - role: etcd
+
+- name: Run etcd balancer
+  hosts: balancer
+  tasks:
+    - name: Create config for nginx load-balancer for etcd cluster
+      vars:
+          postgres_etcd_hosts: "{{ groups['etcd'] }}"
+      set_fact:
+        nginx_config_content: "{{ lookup('template', '{{ playbook_dir }}/../templates/etcd_nginx.conf.j2') }}"
+
+    - name: Run nginx load-balancer for etcd cluster
+      include_role:
+        name: nginx
+
+- name: Run PostgreSQL cluster
+  hosts: db
+  roles:
+    - role: postgres

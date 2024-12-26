@@ -1,0 +1,35 @@
+- name: Install Nginx
+  package:
+    name: nginx
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Read current nginx config
+  slurp:
+    src: "{{ nginx_config_file_path }}"
+  register: current_nginx_config_slurp
+  ignore_errors: true
+
+- block:
+
+  - name: Delete default nginx virtual host config
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    become: true
+
+  - name: Create nginx config file
+    copy:
+      content: "{{ nginx_config_content }}"
+      dest: "{{ nginx_config_file_path }}"
+    become: true
+
+  - name: Restart
+    service:
+      name: nginx.service
+      state: restarted
+    become: true
+    
+  when: nginx_config_content is defined and
+        (current_nginx_config_slurp.failed or (nginx_config_content | trim) != (current_nginx_config_slurp.content | b64decode | trim))

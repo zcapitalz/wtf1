@@ -1,0 +1,62 @@
+scope: {{ postgres_patroni_cluster_name }}
+name: {{ postgres_patroni_name }}
+ 
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: {{ inventory_hostname }}:8008
+ 
+etcd:
+  host: {{ postgres_etcd_load_balancer_host }}:2379
+ 
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        wal_level: replica
+        hot_standby: "on"
+        logging_collector: "on"
+        max_wal_senders: 5
+        max_replication_slots: 5
+      pg_hba:
+      - local all all md5
+      - host replication replicator 0.0.0.0/0 md5
+      - host all all 0.0.0.0/0 md5
+ 
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+ 
+  users:
+    admin:
+      password: {{ postgres_admin_password }}
+ 
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: {{ inventory_hostname }}:5432
+  data_dir: {{ postgres_data_directory_path }}
+  bin_dir: {{ postgres_bin_directory_path }}
+  pgpass: /tmp/pgpass
+  authentication:
+    replication:
+      username: replicator
+      password: {{ postgres_replicator_password }}
+    superuser:
+      username: postgres
+      password: {{ postgres_admin_password }}
+    rewind:
+      username: rewind_user
+      password: {{ postgres_rewind_user_password }}
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+ 
+tags:
+  nofailover: false
+  noloadbalance: false
+  clonefrom: false
+  nosync: false
